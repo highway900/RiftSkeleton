@@ -13,7 +13,7 @@
 #endif
 
 #include "FBO.h"
-#include "Scene.h"
+#include "ModelScene.h"
 #include "HydraScene.h"
 
 #ifdef USE_OCULUSSDK
