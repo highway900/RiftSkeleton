@@ -57,7 +57,7 @@ public:
 
 public:
     // This public section is for exposing state variables to AntTweakBar
-    Scene m_scene;
+    ModelScene m_scene;
     HydraScene m_hydraScene;
 
 #ifdef USE_OCULUSSDK

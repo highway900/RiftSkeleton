@@ -17,11 +17,11 @@
 
 ///@brief The Scene class renders everything in the VR world that will be the same
 /// in the Oculus and Control windows. The RenderForOneEye function is the display entry point.
-class Scene : public IScene
+class ModelScene : public IScene
 {
 public:
-    Scene();
-    virtual ~Scene();
+    ModelScene();
+    virtual ~ModelScene();
 
     virtual void initGL();
     virtual void timestep(double absTime, double dt);
@@ -64,6 +64,6 @@ public:
     float m_amplitude;
 
 private: // Disallow copy ctor and assignment operator
-    Scene(const Scene&);
-    Scene& operator=(const Scene&);
+    ModelScene(const ModelScene&);
+    ModelScene& operator=(const ModelScene&);
 };

@@ -12,8 +12,8 @@ SET( GL_FRAMEWORK "GLFW" CACHE STRING "Which OpenGL windowing framework to use" 
 # Control linking to AntTweakBar and Sixense libraries by toggling a config flag.
 # @todo Write or find a "FindXXX.cmake" script to search typical install locations
 # on the build machine and link the libraries in.
-SET( USE_ANTTWEAKBAR TRUE CACHE BOOL "Use AntTweakBar" )
-SET( USE_SIXENSE TRUE CACHE BOOL "Use Sixense" )
+SET( USE_ANTTWEAKBAR FALSE CACHE BOOL "Use AntTweakBar" )
+SET( USE_SIXENSE FALSE CACHE BOOL "Use Sixense" )
 SET( USE_OCULUSSDK TRUE CACHE BOOL "Use Oculus SDK" )
 
 SET( USE_CORE_CONTEXT TRUE CACHE BOOL "Use Core Context" )
@@ -223,19 +223,19 @@ ELSEIF( APPLE )
 
 ELSEIF( UNIX )
     ADD_DEFINITIONS( -D_LINUX )
-    SET( LIBS_HOME "~/lib" )
+    SET( LIBS_HOME "/home/mattb/Dev/games/libs" )
     
     ADD_DEFINITIONS( -D_DEBUG )
     SET(CMAKE_CXX_FLAGS "-ggdb")
     SET(CMAKE_CXX_FLAGS_DEBUG "-ggdb")
-
-    SET( GLM_ROOT "${LIBS_HOME}/glm-0.9.5.4/glm" CACHE STRING "glm root" )
+    
+    SET( GLM_ROOT "${LIBS_HOME}/glm" CACHE STRING "glm root" )
     INCLUDE_DIRECTORIES( "${GLM_ROOT}" )
     ADD_DEFINITIONS( -DGLM_FORCE_RADIANS )
 
     IF( GL_FRAMEWORK STREQUAL "GLFW" )
         MESSAGE("Using GLFW Framework.")
-        INCLUDE_DIRECTORIES( "/usr/local/include/GLFW" )
+        INCLUDE_DIRECTORIES( "${LIBS_HOME}/glfw/include" )
         SET( FRAMEWORK_LIBS -lglfw3 )
     ELSEIF( GL_FRAMEWORK STREQUAL "SDL" )
         MESSAGE("Using SDL2 Framework.")
@@ -250,7 +250,8 @@ ELSEIF( UNIX )
     ENDIF()
 
     IF( USE_OCULUSSDK )
-        SET( OCULUSSDK_ROOT "${LIBS_HOME}/ovr_sdk_linux_0.5.0.1" CACHE STRING "OculusSDK root" )
+        MESSAGE("Using Oculus")
+        SET( OCULUSSDK_ROOT "~/Downloads/software/games/rift/ovr_sdk_linux_0.5.0.1" CACHE STRING "OculusSDK root" )
         INCLUDE_DIRECTORIES( "${OCULUSSDK_ROOT}/LibOVR/Include" )
         INCLUDE_DIRECTORIES( "${OCULUSSDK_ROOT}/LibOVR/Src" )
         INCLUDE_DIRECTORIES( "${OCULUSSDK_ROOT}/LibOVRKernel/Src" )
@@ -284,6 +285,8 @@ ELSEIF( UNIX )
 
     find_package(OpenGL REQUIRED)
     include_directories( ${OPENGL_INCLUDE_DIRS} )
+    INCLUDE_DIRECTORIES( "/usr/include" )
+
 
     SET( PLATFORM_LIBS
         ${OVR_LIBS}
@@ -300,6 +303,7 @@ ELSEIF( UNIX )
         -lXinerama # GLFW 3.1
         -lXcursor # GLFW 3.1
         -ldl
+        -lSOIL
         ${HYDRA_LIBS}
         ${ANT_LIBS}
         )
@@ -324,6 +328,11 @@ FILE( GLOB_RECURSE SCENE_SOURCE_FILES
     src/Scene/*.h
     )
 
+FILE( GLOB_RECURSE MODEL_SOURCE_FILES
+    src/Model/*.cpp
+    src/Model/*.h
+    )
+
 FILE( GLOB_RECURSE FLYINGMOUSE_SOURCE_FILES
     src/FlyingMouse/*.cpp
     src/FlyingMouse/*.h
@@ -344,11 +353,13 @@ INCLUDE_DIRECTORIES("src/Util")
 INCLUDE_DIRECTORIES("src/Util/GL")
 INCLUDE_DIRECTORIES("src/AppSkeleton")
 INCLUDE_DIRECTORIES("src/Scene")
+INCLUDE_DIRECTORIES("src/Model")
 INCLUDE_DIRECTORIES("src/FlyingMouse")
 
 ADD_LIBRARY( Util        ${UTIL_SOURCE_FILES} )
 ADD_LIBRARY( AppSkeleton ${APPSKELETON_SOURCE_FILES} )
 ADD_LIBRARY( Scene       ${SCENE_SOURCE_FILES} )
+ADD_LIBRARY( Model       ${MODEL_SOURCE_FILES} )
 ADD_LIBRARY( FlyingMouse ${FLYINGMOUSE_SOURCE_FILES} )
 
 IF( GL_FRAMEWORK STREQUAL "GLFW" )
@@ -362,6 +373,7 @@ ENDIF()
 TARGET_LINK_LIBRARIES( ${PROJECT_NAME}
     AppSkeleton
     Scene
+    Model
     Util
     FlyingMouse
     ${PLATFORM_LIBS}

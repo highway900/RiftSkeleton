@@ -1,6 +1,7 @@
 // Scene.cpp
 
 #include "ModelScene.h"
+#include "model.h"
 
 #ifdef __APPLE__
 #include "opengl/gl.h"
@@ -28,20 +29,19 @@
 
 #include "Logger.h"
 
-Scene::Scene()
+ModelScene:: ModelScene()
 : m_basic()
-, m_model()
 , m_plane()
 , m_phaseVal(0.0f)
-, m_amplitude(0.01f)
+, m_amplitude(0.1f)
 {
 }
 
-Scene::~Scene()
+ModelScene::~ModelScene()
 {
 }
 
-void Scene::initGL()
+void ModelScene::initGL()
 {
     m_basic.initProgram("basic");
     m_basic.bindVAO();
@@ -54,8 +54,12 @@ void Scene::initGL()
     glBindVertexArray(0);
 }
 
+void ModelScene::_LoadModel() {
+
+}
+
 ///@brief While the basic VAO is bound, gen and bind all buffers and attribs.
-void Scene::_InitCubeAttributes()
+void ModelScene::_InitCubeAttributes()
 {
     const glm::vec3 minPt(0,0,0);
     const glm::vec3 maxPt(1,1,1);
@@ -103,7 +107,7 @@ void Scene::_InitCubeAttributes()
 }
 
 ///@brief While the basic VAO is bound, gen and bind all buffers and attribs.
-void Scene::_InitPlaneAttributes()
+void ModelScene::_InitPlaneAttributes()
 {
     const glm::vec3 minPt(-10.0f, 0.0f, -10.0f);
     const glm::vec3 maxPt(10.0f, 0.0f, 10.0f);
@@ -147,7 +151,7 @@ void Scene::_InitPlaneAttributes()
 }
 
 // Draw an RGB color cube
-void Scene::DrawColorCube() const
+void ModelScene::DrawColorCube() const
 {
     m_basic.bindVAO();
     glDrawElements(GL_TRIANGLES,
@@ -158,7 +162,7 @@ void Scene::DrawColorCube() const
 }
 
 /// Draw a circle of color cubes(why not)
-void Scene::_DrawBouncingCubes(
+void ModelScene::_DrawBouncingCubes(
     const glm::mat4& modelview,
     glm::vec3 center,
     float radius,
@@ -185,7 +189,7 @@ void Scene::_DrawBouncingCubes(
 }
 
 
-void Scene::_DrawScenePlanes(const glm::mat4& modelview) const
+void ModelScene::_DrawScenePlanes(const glm::mat4& modelview) const
 {
     m_plane.bindVAO();
     {
@@ -211,97 +215,8 @@ void Scene::_DrawScenePlanes(const glm::mat4& modelview) const
     glBindVertexArray(0);
 }
 
-
-void Scene::Recursive_render (const struct aiScene *sc, const struct aiNode* nd)
-{
-    unsigned int i;
-    unsigned int n = 0, t;
-    struct aiMatrix4x4 m = nd->mTransformation;
-
-    /* update transform */
-    // TODO: Move below to DrawScene
-    aiTransposeMatrix4(&m);
-    glPushMatrix();
-    glMultMatrixf((float*)&m);
-
-    /* draw all meshes assigned to this node */
-    for (; n < nd->mNumMeshes; ++n) {
-        const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
-
-        apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-
-        for (t = 0; t < mesh->mNumFaces; ++t) {
-            const struct aiFace* face = &mesh->mFaces[t];
-            GLenum face_mode;
-
-            switch(face->mNumIndices) {
-                case 1: face_mode = GL_POINTS; break;
-                case 2: face_mode = GL_LINES; break;
-                case 3: face_mode = GL_TRIANGLES; break;
-                default: face_mode = GL_POLYGON; break;
-            }
-         
-            for(i = 0; i < face->mNumIndices; i++) {
-                int index = face->mIndices[i];
-                if(mesh->mColors[0] != NULL)
-                    glColor4fv((GLfloat*)&mesh->mColors[0][index]);
-                if(mesh->mNormals != NULL) 
-                    glNormal3fv(&mesh->mNormals[index].x);
-                glVertex3fv(&mesh->mVertices[index].x);
-            }
-
-            GLuint vertVbo = 0;
-            glGenBuffers(1, &vertVbo);
-            m_model.AddVbo("vPosition", vertVbo);
-            glBindBuffer(GL_ARRAY_BUFFER, vertVbo);
-            // TODO: Change size of allocation
-            glBufferData(GL_ARRAY_BUFFER, 8*3*sizeof(GLfloat), &mesh->mVertices, GL_STATIC_DRAW);
-            glVertexAttribPointer(m_model.GetAttrLoc("vPosition"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-            GLuint colVbo = 0;
-            glGenBuffers(1, &colVbo);
-            m_model.AddVbo("vColor", colVbo);
-            glBindBuffer(GL_ARRAY_BUFFER, colVbo);
-            // TODO: Change size of allocation
-            glBufferData(GL_ARRAY_BUFFER, 8*3*sizeof(GLfloat), &mesh->mVertices, GL_STATIC_DRAW);
-            glVertexAttribPointer(m_model.GetAttrLoc("vColor"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-            glEnableVertexAttribArray(m_model.GetAttrLoc("vPosition"));
-            glEnableVertexAttribArray(m_model.GetAttrLoc("vColor"));
-
-            GLuint quadVbo = 0;
-            glGenBuffers(1, &quadVbo);
-            m_model.AddVbo("elements", quadVbo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadVbo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, 12*3*sizeof(GLuint), face->mIndices, GL_STATIC_DRAW);
-
-        }
-
-        // Draw mesh
-        glBindVertexArray(this->VAO);
-        glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-        glDrawElements(
-            GL_TRIANGLES,
-            mesh->mNumIndices,
-            0,
-            0
-            );
-
-        }
-
-    }
-
-    /* draw all children */
-    for (n = 0; n < nd->mNumChildren; ++n) {
-        recursive_render(sc, nd->mChildren[n]);
-    }
-
-}
-
-
 /// Draw the scene(matrices have already been set up).
-void Scene::DrawScene(
+void ModelScene::DrawScene(
     const glm::mat4& modelview,
     const glm::mat4& projection,
     const glm::mat4& object) const
@@ -339,7 +254,7 @@ void Scene::DrawScene(
 }
 
 
-void Scene::RenderForOneEye(const float* pMview, const float* pPersp) const
+void ModelScene::RenderForOneEye(const float* pMview, const float* pPersp) const
 {
     if (m_bDraw == false)
         return;
@@ -351,13 +266,13 @@ void Scene::RenderForOneEye(const float* pMview, const float* pPersp) const
     DrawScene(modelview, projection, object);
 }
 
-void Scene::timestep(double /*absTime*/, double dt)
+void ModelScene::timestep(double /*absTime*/, double dt)
 {
     m_phaseVal += static_cast<float>(dt);
 }
 
 // Check for hits against floor plane
-bool Scene::RayIntersects(
+bool ModelScene::RayIntersects(
     const float* pRayOrigin,
     const float* pRayDirection,
     float* pTParameter, // [inout]
