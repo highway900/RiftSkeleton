@@ -1,4 +1,6 @@
 #pragma once
+#include "shader.h"
+
 // Std. Includes
 #include <string>
 #include <fstream>

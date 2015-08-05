@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.6 )
 PROJECT( RiftSkeleton )
 
+LIST(APPEND CMAKE_CXX_FLAGS "-std=c++11")
+
 INCLUDE(cmake_modules/InvokePython.cmake)
 INVOKEPYTHON( "tools/hardcode_shaders.py" )
 # Python script will dump generated headers to autogen/
@@ -285,14 +287,14 @@ ELSEIF( UNIX )
 
     find_package(OpenGL REQUIRED)
     include_directories( ${OPENGL_INCLUDE_DIRS} )
-    INCLUDE_DIRECTORIES( "/usr/include" )
-
+    INCLUDE_DIRECTORIES( "/usr/include/SOIL" )
 
     SET( PLATFORM_LIBS
         ${OVR_LIBS}
         -lGLEW
         -lGL
         -lGLU
+        -lSOIL
         ${FRAMEWORK_LIBS}
         -pthread
         -lrt
@@ -303,7 +305,7 @@ ELSEIF( UNIX )
         -lXinerama # GLFW 3.1
         -lXcursor # GLFW 3.1
         -ldl
-        -lSOIL
+        -lassimp
         ${HYDRA_LIBS}
         ${ANT_LIBS}
         )
@@ -351,14 +353,14 @@ ENDIF()
 
 INCLUDE_DIRECTORIES("src/Util")
 INCLUDE_DIRECTORIES("src/Util/GL")
-INCLUDE_DIRECTORIES("src/AppSkeleton")
 INCLUDE_DIRECTORIES("src/Scene")
+INCLUDE_DIRECTORIES("src/AppSkeleton")
 INCLUDE_DIRECTORIES("src/Model")
 INCLUDE_DIRECTORIES("src/FlyingMouse")
 
 ADD_LIBRARY( Util        ${UTIL_SOURCE_FILES} )
-ADD_LIBRARY( AppSkeleton ${APPSKELETON_SOURCE_FILES} )
 ADD_LIBRARY( Scene       ${SCENE_SOURCE_FILES} )
+ADD_LIBRARY( AppSkeleton ${APPSKELETON_SOURCE_FILES} )
 ADD_LIBRARY( Model       ${MODEL_SOURCE_FILES} )
 ADD_LIBRARY( FlyingMouse ${FLYINGMOUSE_SOURCE_FILES} )
 

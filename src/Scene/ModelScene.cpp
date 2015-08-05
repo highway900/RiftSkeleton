@@ -1,7 +1,6 @@
 // Scene.cpp
 
 #include "ModelScene.h"
-#include "model.h"
 
 #ifdef __APPLE__
 #include "opengl/gl.h"
@@ -29,14 +28,6 @@
 
 #include "Logger.h"
 
-ModelScene:: ModelScene()
-: m_basic()
-, m_plane()
-, m_phaseVal(0.0f)
-, m_amplitude(0.1f)
-{
-}
-
 ModelScene::~ModelScene()
 {
 }
@@ -55,7 +46,13 @@ void ModelScene::initGL()
 }
 
 void ModelScene::_LoadModel() {
+    shader = Shader("planet/shader.vs", "planet/shader.frag");
+    model = Model("planet/planet.obj");
+}
 
+void ModelScene::DrawModel() {
+    shader.Use();
+    model.Draw(shader);
 }
 
 ///@brief While the basic VAO is bound, gen and bind all buffers and attribs.

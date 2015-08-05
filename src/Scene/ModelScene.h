@@ -12,6 +12,9 @@
 
 #include <glm/glm.hpp>
 
+#include "model.h"
+#include "shader.h"
+
 #include "IScene.h"
 #include "ShaderWithVariables.h"
 
@@ -45,6 +48,11 @@ protected:
         const glm::mat4& object) const;
 
 protected:
+    void _LoadModel();
+    void DrawModel();
+    Model model;
+    Shader shader;
+
     void _InitCubeAttributes();
     void _InitPlaneAttributes();
 
