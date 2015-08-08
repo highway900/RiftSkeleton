@@ -49,9 +49,7 @@ protected:
 
 protected:
     void _LoadModel();
-    void DrawModel();
-    Model model;
-    Shader shader;
+    void DrawModel() const;
 
     void _InitCubeAttributes();
     void _InitPlaneAttributes();
@@ -70,6 +68,9 @@ protected:
 
 public:
     float m_amplitude;
+    
+    Model* model;
+    Shader* shader;
 
 private: // Disallow copy ctor and assignment operator
     ModelScene(const ModelScene&);

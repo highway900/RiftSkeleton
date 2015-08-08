@@ -1,3 +1,6 @@
+#ifndef __MODEL_H_
+#define __MODEL_H_
+
 // Std. Includes
 #include <string>
 #include <fstream>
@@ -16,8 +19,6 @@ using namespace std;
 #include <assimp/postprocess.h>
 
 #include <mesh.h>
-
-GLint TextureFromFile(const char* path, string directory, bool gamma);
 
 class Model 
 {
@@ -47,6 +48,7 @@ private:
     // Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
     void loadModel(string path)
     {
+        cout << "Loaded file: " << path << endl;
         // Read file via ASSIMP
         Assimp::Importer importer;
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
@@ -164,6 +166,30 @@ private:
         return Mesh(vertices, indices, textures);
     }
 
+    GLint TextureFromFile(const char* path, string directory, bool gamma)
+    {
+         //Generate texture ID and load texture data 
+        string filename = string(path);
+        filename = directory + '/' + filename;
+        GLuint textureID;
+        glGenTextures(1, &textureID);
+        int width,height;
+        unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+        // Assign texture to ID
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, gamma ? GL_SRGB : GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+        glGenerateMipmap(GL_TEXTURE_2D);    
+
+        // Parameters
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        SOIL_free_image_data(image);
+        return textureID;
+    }
+
     // Checks all material textures of a given type and loads the textures if they're not loaded yet.
     // The required info is returned as a Texture struct.
     vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName)
@@ -187,7 +213,7 @@ private:
             if(!skip)
             {   // If texture hasn't been loaded already, load it
                 Texture texture;
-                texture.id = TextureFromFile(str.C_Str(), this->directory, false);
+                texture.id = this->TextureFromFile(str.C_Str(), this->directory, false);
                 texture.type = typeName;
                 texture.path = str;
                 textures.push_back(texture);
@@ -197,3 +223,4 @@ private:
         return textures;
     }
 };
+#endif

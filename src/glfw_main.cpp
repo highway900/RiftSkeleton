@@ -828,7 +828,7 @@ int main(int argc, char** argv)
     const ovrVector2i pos = g_app.getHmdWindowPos();
     std::string windowTitle = "";
 
-    LOG_INFO("HEllo");
+    LOG_INFO("Hello");
 
     if (g_app.UsingDebugHmd() == true)
     {
@@ -941,6 +941,7 @@ int main(int argc, char** argv)
         LOG_INFO("glewInit() error.");
         exit(EXIT_FAILURE);
     }
+    LOG_INFO("glewInit() success.");
 
 #ifdef _DEBUG
     // Debug callback initialization
@@ -964,7 +965,7 @@ int main(int argc, char** argv)
     g_app.initVR(swapBackBufferDims);
     LOG_INFO("initVR(%d) complete.", swapBackBufferDims);
 
-    //SetVsync(1);
+    SetVsync(0);
 
     while (!glfwWindowShouldClose(l_Window))
     {

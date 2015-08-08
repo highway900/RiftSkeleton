@@ -28,6 +28,10 @@
 
 #include "Logger.h"
 
+ModelScene::ModelScene()
+{
+}
+
 ModelScene::~ModelScene()
 {
 }
@@ -43,16 +47,16 @@ void ModelScene::initGL()
     m_plane.bindVAO();
     _InitPlaneAttributes();
     glBindVertexArray(0);
+    this->_LoadModel();
 }
 
 void ModelScene::_LoadModel() {
-    shader = Shader("planet/shader.vs", "planet/shader.frag");
-    model = Model("planet/planet.obj");
+    shader = new Shader("../src/Model/a511/shader.vs", "../src/Model/a511/shader.frag");
+    model = new Model((char *)"../src/Model/a511/a511.obj");
 }
 
-void ModelScene::DrawModel() {
-    shader.Use();
-    model.Draw(shader);
+void ModelScene::DrawModel() const {
+    // Currently empty
 }
 
 ///@brief While the basic VAO is bound, gen and bind all buffers and attribs.
@@ -218,6 +222,7 @@ void ModelScene::DrawScene(
     const glm::mat4& projection,
     const glm::mat4& object) const
 {
+#if 0
     glUseProgram(m_plane.prog());
     {
         glUniformMatrix4fv(m_plane.GetUniLoc("mvmtx"), 1, false, glm::value_ptr(modelview));
@@ -236,7 +241,6 @@ void ModelScene::DrawScene(
         _DrawBouncingCubes(modelview, glm::vec3(0.0f, 0.0f, 0.5f), 1.5f, 0.5f);
 
         (void)object;
-#if 0
         glm::mat4 objectMatrix = modelview;
         objectMatrix = glm::translate(objectMatrix, glm::vec3(0.0f, 1.0f, 0.0f)); // Raise rotation center above floor
         // Rotate about cube center
@@ -245,9 +249,24 @@ void ModelScene::DrawScene(
         objectMatrix = glm::translate(objectMatrix, glm::vec3(-0.5f));
         glUniformMatrix4fv(m_basic.GetUniLoc("mvmtx"), 1, false, glm::value_ptr(objectMatrix));
         DrawColorCube();
-#endif
     }
     glUseProgram(0);
+#endif
+    
+    shader->Use();
+    glm::mat4 mm;
+    glm::vec3 lightPos(2.0f, 2.0f, 2.0f);
+    glUniform3fv(glGetUniformLocation(shader->Program, "lightPos"), 1, &lightPos[0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "view"), 1, GL_FALSE, glm::value_ptr(modelview));
+    
+    mm = glm::translate(mm, glm::vec3(0.0f, 0.0f, 0.0f)); // Translate it down a bit so it's at the center of the scene
+    mm = glm::scale(mm, glm::vec3(1.0f, 1.0f, 1.0f)); // It's a bit too big for our scene, so scale it down
+    glUniformMatrix4fv(glGetUniformLocation(shader->Program, "model"), 1, GL_FALSE, glm::value_ptr(mm));
+    
+    model->Draw(*shader);
+    glUseProgram(0);
+
 }
 
 

@@ -108,7 +108,8 @@ void RiftAppSkeleton::initHMD()
     m_hmdCaps = m_Hmd->HmdCaps;
 #ifndef _LINUX
     if ((m_hmdCaps & ovrHmdCap_ExtendDesktop) != 0)
-    {
+    {   
+        std::cout << "disbled Direct to rift" << endl;
         m_directHmdMode = false;
     }
 #endif
